@@ -1,0 +1,125 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import "tailwindcss";
+
+
+.react-flow-edge-review .react-flow__edge-path {
+  stroke: #f97316; /* Orange */
+  stroke-width: 2;
+}
+
+.react-flow-edge-approve .react-flow__edge-path {
+  stroke: #10b981; /* Green */
+  stroke-width: 2;
+}
+
+.react-flow-edge-owner .react-flow__edge-path {
+  stroke: #cbd5e1; /* Slate-300 */
+  stroke-dasharray: 5 5;
+}
+
+/* 👇 --- ADD THESE NEW CLASSES --- 👇 */
+
+/* For dependency "blocks" edges */
+.react-flow-edge-dependency .react-flow__edge-path {
+  stroke: #ef4444; /* Red */
+  stroke-width: 2;
+}
+
+/* For faint "assigned" edges in dependency view */
+.react-flow-edge-faint .react-flow__edge-path {
+  stroke: #e2e8f0; /* Slate-200 */
+  stroke-dasharray: 2 4;
+}
+
+/* This styles the animated part of the edge */
+.react-flow-edge-review .react-flow__edge-path-animation {
+  stroke: #f97316;
+}
+
+.react-flow-edge-approve .react-flow__edge-path-animation {
+  stroke: #10b981;
+}
+
+/* 👇 --- ADD THIS NEW CLASS --- 👇 */
+.react-flow-edge-dependency .react-flow__edge-path-animation {
+  stroke: #ef4444;
+}
+
+@theme {
+  --font-display: "Poppins","sans-serif";
+  --breakpoint-3xl: 1920px;
+  --color-primary: #1368EC;
+}
+
+@layer base{
+  html{
+    font-family: var(--font-display);
+  }
+
+  body{
+    background-color: #fcfbfc;
+    overflow-x: hidden;
+  }
+}
+
+. input-box{
+  @apply w-full flex justify-between gap-3 text-sm text-black bg-slate-100/50 rounded px-4 py-3 mb-4 mt-3 border border-slate-200 outline-none;
+}
+
+.btn-primary{
+  @apply w-full text-sm font-medium text-white bg-primary shadow-lg shadow-purple-600/5 p-[10px] rounded-md my-1 hover:bg-blue-600/15 hover:text-blue-600 cursor-pointer;
+}
+
+.card{
+  @apply bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50;
+}
+
+.card-btn{
+  @apply flex items-center gap-3 text-[12px] font-medium text-gray-700 hover:text-primary bg-gray-50 hover:bg-blue-50 px-4 py-1.5 rounded-lg border border-gray-200/50 cursor-pointer;
+}
+
+.form-input{
+@apply w-full text-sm text-black outline-none bg-white border border-slate-100 px-2.5 py-3 rounded-md mt-2 placeholder:text-gray-500;
+}
+
+.download-btn{
+  @apply items-center gap-3 text-xs md:text-[13px] text-lime-900 bg-lime-100 px-2 md:px-3 py-2 rounded border border-lime-200 hover:border-lime-400 cursor-pointer;
+}
+
+.user-card{
+  @apply  bg-white p-4 rounded-xl shadow-md shadow-gray-100 border border-gray-200/50
+}
+
+.card-btn-fill{
+@apply flex items-center gap-3 text-[12px] font-medium text-white hover:text-primary bg-primary hover:bg-blue-50 px-4 py-1.5 rounded-lg border border-primary cursor-pointer; 
+}
+
+.add-btn{
+  @apply w-full flex items-center justify-center gap-1.5 text-xs md:text-sm font-medium text-primary whitespace-nowrap bg-blue-50 border-blue-100 rounded-lg px-4 py-2 cursor-pointer;
+}
+
+/* In your main CSS file (e.g., index.css) */
+.truncate-description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;  /* This is the number of lines you want to show */
+  overflow: hidden;
+}
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #d1d5db; /* gray-300 */
+    border-radius: 20px;
+    border: 3px solid transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af; /* gray-400 */
+  }
+}
