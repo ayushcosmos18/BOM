@@ -53,3 +53,5 @@ frontend/task-manager/dist/
 # Specific backend ignores
 backend/node_modules/
 backend/dist/
+
+backend/uploads/
