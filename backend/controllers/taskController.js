@@ -950,7 +950,9 @@ const createTask = async (req, res) => {
             assignedTo,
             attachments,
             todoChecklist,
-            reviewers
+            reviewers,
+            isSocialPost, 
+            socialMeta
         } = req.body;
 
         if (!project) {
@@ -973,7 +975,9 @@ const createTask = async (req, res) => {
             todoChecklist,
             attachments,
             dependencies: dependencies ? dependencies.map(dep => dep.value) : [],
-            reviewers
+            reviewers,
+            isSocialPost: isSocialPost || false,
+            socialMeta: socialMeta || {}
         };
 
         if (taskData.assignedTo && taskData.assignedTo.length > 0 && (!taskData.reviewers || taskData.reviewers.length === 0)) {
@@ -1079,6 +1083,11 @@ const updateTask = async (req, res) => {
         if (req.body.dependencies !== undefined) {
             // If it exists, we map the array from {value, label} to just the ID.
             task.dependencies = req.body.dependencies.map(dep => dep.value);
+        }
+        if (req.body.isSocialPost !== undefined) task.isSocialPost = req.body.isSocialPost;
+        if (req.body.socialMeta) {
+            // Merge existing meta with new updates to prevent data loss
+            task.socialMeta = { ...task.socialMeta, ...req.body.socialMeta };
         }
 
         const updatedTask = await task.save();

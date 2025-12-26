@@ -41,6 +41,8 @@ import ProjectChatPage from './pages/Shared/ProjectChatPage';
 import ProjectWorkMap from './pages/Shared/ProjectWorkMap';
 import ProductionSankeyPage from './pages/Admin/ProductionSankeyPage';
 import PendingReviews from './pages/Shared/PendingReviews';
+import SocialPlanner from './pages/Shared/SocialPlanner';
+
 
 const App = () => {
     return (
@@ -91,7 +93,7 @@ const App = () => {
                             <Route path="/profile" element={<ProfilePage />} />
                             <Route path="/board" element={<ProjectBoard />} />
                             <Route path="/reviews" element={<PendingReviews />} />
-                            
+                            <Route path="projects/:projectId/social" element={<SocialPlanner />} />
 
                         </Route>
                     </Route>

@@ -52,6 +52,11 @@ const CreateTask = () => {
     dependencies: [],
     attachments:[],
     revisionHistory: [],
+    isSocialPost: false,
+    socialMeta: {
+        platform: 'Instagram',
+        postType: 'static'
+    }
   });
   
   const [projectTasks, setProjectTasks] = useState([]);
@@ -434,6 +439,44 @@ const refreshTaskDataWithNewComment = (updatedTask) => {
     <div className="mt-5">
       <div className="grid grid-cols-1 md:grid-cols-4 mt-4">
         <div className="form-card col-span-3">
+          {/* --- NEW: SOCIAL MEDIA TOGGLE --- */}
+<div className="mb-6 bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-col md:flex-row md:items-center gap-4">
+    <div className="flex items-center gap-3">
+        <div className="relative inline-block w-10 mr-2 align-middle select-none">
+            <input 
+                type="checkbox" 
+                checked={taskData.isSocialPost}
+                onChange={(e) => handleValueChange("isSocialPost", e.target.checked)}
+                className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                style={{ right: taskData.isSocialPost ? '0' : 'auto', left: taskData.isSocialPost ? 'auto' : '0' }}
+            />
+            <div className={`toggle-label block overflow-hidden h-5 rounded-full cursor-pointer ${taskData.isSocialPost ? 'bg-primary' : 'bg-gray-300'}`}></div>
+        </div>
+        <label className="text-sm font-bold text-slate-700">Is this a Social Media Post?</label>
+    </div>
+
+    {/* CONDITIONAL DROPDOWNS */}
+    {taskData.isSocialPost && (
+        <div className="flex gap-4 flex-1">
+            <div className="w-1/2">
+                <SelectDropdown
+                    options={[{value: 'Instagram', label: 'Instagram'}, {value: 'LinkedIn', label: 'LinkedIn'}]}
+                    value={taskData.socialMeta?.platform || 'Instagram'}
+                    onChange={(val) => setTaskData(prev => ({...prev, socialMeta: {...prev.socialMeta, platform: val}}))}
+                    placeholder="Platform"
+                />
+            </div>
+            <div className="w-1/2">
+                <SelectDropdown
+                    options={[{value: 'static', label: 'Static Image'}, {value: 'reel', label: 'Reel / Video'}, {value: 'carousel', label: 'Carousel'}]}
+                    value={taskData.socialMeta?.postType || 'static'}
+                    onChange={(val) => setTaskData(prev => ({...prev, socialMeta: {...prev.socialMeta, postType: val}}))}
+                    placeholder="Type"
+                />
+            </div>
+        </div>
+    )}
+</div>
 <div className="flex items-center justify-between">
   <div className="flex items-center gap-3">
     <h2 className="text-xl md:text-xl font-medium">

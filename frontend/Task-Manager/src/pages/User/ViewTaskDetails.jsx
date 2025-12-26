@@ -542,7 +542,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosinstance';
-import { API_PATHS } from '../../utils/apiPaths';
+import { API_PATHS, BASE_URL } from '../../utils/apiPaths';
 import toast from 'react-hot-toast';
 import moment from 'moment';
 import { UserContext } from '../../context/userContext';
@@ -554,6 +554,7 @@ import CelebrationOverlay from '../../components/CelebrationOverlay';
 
 // Icons
 import { LuSquareArrowOutUpRight, LuPanelRightClose, LuPanelLeftClose } from 'react-icons/lu';
+import { LuVideo, LuImage, LuLayers, LuUpload, LuLayoutGrid, LuExternalLink } from 'react-icons/lu';
 import { MdCheckCircle, MdOutlineRadioButtonUnchecked } from 'react-icons/md';
 
 
@@ -563,9 +564,11 @@ import { MdCheckCircle, MdOutlineRadioButtonUnchecked } from 'react-icons/md';
 const ViewTaskDetails = () => {
     const { id } = useParams();
     const [task, setTask] = useState(null);
+    const navigate = useNavigate();
     const { user: currentUser, socket } = useContext(UserContext);
     const [isCommentsOpen, setIsCommentsOpen] = useState(true);
     const [showCelebration, setShowCelebration] = useState(false);
+    const [uploading, setUploading] = useState(false);
 
     const getStatusTagColor = (status) => {
         switch (status) {
@@ -632,6 +635,72 @@ const ViewTaskDetails = () => {
         }
         window.open(link, "_blank");
     };
+    const handleSocialUpload = async (e, isCoverOnly = false) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        setUploading(true);
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+
+        try {
+            // 1. Upload Files
+            const uploadRes = await axiosInstance.post(API_PATHS.SOCIAL.UPLOAD, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            const newFiles = uploadRes.data.files.map(f => ({
+                url: f.filePath, 
+                mimeType: f.mimeType,
+                originalName: f.originalName
+            }));
+
+            // 2. Prepare Payload
+            const payload = {};
+
+            if (isCoverOnly) {
+                // COVER LOGIC: Just update the display image, don't add to media list
+                payload.gridDisplayImage = newFiles[0].url;
+            } else {
+                // STANDARD LOGIC: Append to gallery + Auto-detect type
+                const currentFiles = task.socialMeta?.mediaFiles || [];
+                const updatedFiles = [...currentFiles, ...newFiles];
+                
+                payload.mediaFiles = updatedFiles;
+                
+                // Auto-detect logic
+                if (updatedFiles.length > 1) payload.postType = 'carousel';
+                else if (updatedFiles.length === 1 && updatedFiles[0].mimeType.includes('video')) payload.postType = 'reel';
+                else payload.postType = 'static';
+
+                // If no cover existed, use the first file
+                if (!task.socialMeta?.gridDisplayImage && updatedFiles.length > 0) {
+                    payload.gridDisplayImage = updatedFiles[0].url;
+                }
+            }
+
+            // 3. Save
+            await axiosInstance.put(API_PATHS.SOCIAL.UPDATE_TASK(task._id), payload);
+
+            toast.success(isCoverOnly ? "Cover updated!" : "Media added!");
+            getTaskDetailsById(); 
+
+        } catch (error) {
+            console.error(error);
+            toast.error("Upload failed");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    // --- NEW: NAVIGATE TO GRID ---
+    const goToSocialGrid = () => {
+        if (task?.project?._id) {
+            navigate(`/projects/${task.project._id}/social`);
+        } else {
+            toast.error("Project not found");
+        }
+    };
 
     useEffect(() => {
         getTaskDetailsById();
@@ -673,6 +742,86 @@ const ViewTaskDetails = () => {
 
                     <div className="space-y-4">
                         <InfoBox label="Description" value={task.description} />
+                        {/* --- NEW: SOCIAL CONTENT PREVIEW --- */}
+{task.isSocialPost && (
+                        <div className="mb-6 border rounded-lg overflow-hidden border-slate-200">
+                            <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                    <h3 className="text-sm font-bold text-slate-700">Social Media Asset</h3>
+                                    <span className="text-[10px] bg-white text-slate-500 px-2 py-0.5 rounded border border-slate-200 uppercase">
+                                        {task.socialMeta?.platform} • {task.socialMeta?.postType}
+                                    </span>
+                                </div>
+                                <div className="flex gap-2">
+    {/* Standard Upload Button */}
+    <label className="flex items-center gap-1.5 text-xs bg-white border border-slate-300 px-3 py-1.5 rounded cursor-pointer hover:bg-slate-50 hover:text-primary transition-colors font-medium">
+        <LuUpload size={14} /> 
+        {uploading ? "Uploading..." : "Add Media"}
+        {/* Pass false for normal upload */}
+        <input 
+            type="file" 
+            multiple 
+            className="hidden" 
+            onChange={(e) => handleSocialUpload(e, false)} 
+            disabled={uploading} 
+        />
+    </label>
+    
+    {/* NEW: Reel Cover Button (Only visible for Reels) */}
+    {task.socialMeta?.postType === 'reel' && (
+        <label className="flex items-center gap-1.5 text-xs bg-purple-50 text-purple-600 border border-purple-200 px-3 py-1.5 rounded cursor-pointer hover:bg-purple-100 transition-colors font-medium" title="Set a specific cover image for the grid">
+            <LuImage size={14} /> Set Cover
+            {/* Pass true for cover-only upload */}
+            <input 
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                onChange={(e) => handleSocialUpload(e, true)} 
+                disabled={uploading} 
+            />
+        </label>
+    )}
+    
+    {/* Go to Grid Button */}
+    <button 
+        onClick={goToSocialGrid}
+        className="flex items-center gap-1.5 text-xs bg-primary text-white px-3 py-1.5 rounded hover:bg-primary/90 transition-colors font-medium"
+    >
+        <LuLayoutGrid size={14} /> Open Planner
+    </button>
+</div>
+                            </div>
+                            
+                            <div className="p-4 bg-white flex gap-4 overflow-x-auto min-h-[100px] items-center">
+                                {task.socialMeta?.mediaFiles?.length > 0 ? (
+                                    task.socialMeta.mediaFiles.map((file, idx) => (
+                                        <div key={idx} className="w-32 h-32 flex-shrink-0 bg-slate-50 border rounded-lg overflow-hidden relative shadow-sm group">
+                                            {file.mimeType?.includes('video') ? (
+                                                <video src={`${BASE_URL}${file.url}`} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <img src={`${BASE_URL}${file.url}`} alt="Social Content" className="w-full h-full object-cover" />
+                                            )}
+                                            <div className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full backdrop-blur-sm">
+                                                {file.mimeType?.includes('video') ? <LuVideo size={12}/> : <LuImage size={12}/>}
+                                            </div>
+                                            <a 
+                                                href={`${BASE_URL}${file.url}`} 
+                                                target="_blank" 
+                                                rel="noreferrer"
+                                                className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white font-medium text-xs"
+                                            >
+                                                <LuExternalLink className="mr-1" /> View
+                                            </a>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-sm text-slate-400 italic w-full text-center py-6 border-2 border-dashed border-slate-100 rounded-lg">
+                                        No visual content uploaded yet.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                         <InfoBox label="Priority" value={task.priority} />
                         <InfoBox label="Due Date" value={task.dueDate ? moment(task.dueDate).format("Do MMM YYYY") : "N/A"} />
                         <InfoBox label="Assigned To" value={task.assignedTo?.map((user) => user.name).join(", ") || "N/A"} />

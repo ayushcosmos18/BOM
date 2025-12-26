@@ -123,3 +123,22 @@
     background-color: #9ca3af; /* gray-400 */
   }
 }
+
+
+.toggle-checkbox:checked {
+    right: 0;
+    border-color: #6875F5; /* Primary Color */
+}
+.toggle-checkbox:checked + .toggle-label {
+    background-color: #6875F5;
+}
+.toggle-checkbox {
+    right: 0;
+    z-index: 1;
+    border-color: #E2E8F0;
+    transition: all 0.3s;
+}
+.toggle-label {
+    width: 2.5rem;
+    height: 1.25rem;
+}

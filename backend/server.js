@@ -24,6 +24,7 @@ const performanceRoutes = require("./routes/performanceRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const announcementRoutes = require("./routes/announcementRoutes");
 const pushRoutes = require("./routes/pushRoutes"); // Added missing pushRoutes
+const socialRoutes = require("./routes/socialRoutes");
 
 const app = express();
 const server = http.createServer(app);
@@ -126,6 +127,8 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/performance", performanceRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/push", pushRoutes); // Corrected usage
+app.use("/api/social", socialRoutes);
+
 app.use("/api/announcements", announcementRoutes);
 
 // Serve uploaded files

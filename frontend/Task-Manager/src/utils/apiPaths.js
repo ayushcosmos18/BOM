@@ -1,5 +1,5 @@
 
-export const BASE_URL = "http://localhost:8000";
+export const BASE_URL = "http://192.168.1.142:8000";
 
 //utils/apiPaths.js
 export const API_PATHS={
@@ -59,6 +59,14 @@ export const API_PATHS={
         GET_MY_REVIEW_HISTORY: "/api/tasks/review-history",
         GET_UPCOMING_REVIEWS: "/api/tasks/upcoming-reviews",
         NUDGE: (taskId) => `/api/tasks/${taskId}/nudge`,
+    },
+    SOCIAL: {
+        UPLOAD: "/api/social/upload",
+        GET_BOARD: "/api/social/board",
+        CREATE_IDEA: "/api/social/create-idea",
+        UPDATE_TASK: (id) => `/api/social/task/${id}`,
+        UPDATE_GRID: "/api/social/grid-update",
+        DOWNLOAD: "/api/social/download"
     },
     TIMELOGS: {
         GET_BY_DAY: (userId) => `/api/timelogs/day/${userId}`,
