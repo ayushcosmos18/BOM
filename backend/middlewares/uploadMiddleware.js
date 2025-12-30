@@ -1,50 +1,54 @@
 const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const path = require('path'); // <--- IMPORT THIS
+require('dotenv').config();
 
-// 1. Ensure the upload directory exists automatically
-const uploadDir = 'uploads/';
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-// 2. Configure Storage
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        // Sanitize filename: Replace spaces with dashes, add timestamp
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const sanitizedName = file.originalname.replace(/\s+/g, '-');
-        cb(null, `${uniqueSuffix}-${sanitizedName}`);
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req, file) => {
+        let folderName = 'social-media-manager/misc';
+        let resourceType = 'auto';
+
+        if (file.mimetype.startsWith('video')) {
+            folderName = 'social-media-manager/reels';
+            resourceType = 'video';
+        } else if (file.mimetype.startsWith('image')) {
+            folderName = 'social-media-manager/images';
+            resourceType = 'image';
+        }
+
+        // --- FIX: Strip extension to prevent .png.png ---
+        const nameWithoutExt = path.parse(file.originalname).name;
+
+        return {
+            folder: folderName,
+            resource_type: resourceType,
+            // Use nameWithoutExt instead of file.originalname
+            public_id: `${Date.now()}-${nameWithoutExt.replace(/\s+/g, '-')}`, 
+        };
     },
 });
 
-// 3. File Filter (Added Video Support)
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = [
-        'image/jpeg', 
-        'image/png', 
-        'image/jpg', 
-        'image/webp',
-        'video/mp4', 
-        'video/quicktime', // .mov (iPhone videos)
-        'video/x-matroska' // .mkv
-    ];
-    
-    if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error('Invalid file type. Only JPEG, PNG, WEBP, MP4, and MOV are allowed.'), false);
-    }
-};
-
 const upload = multer({
     storage: storage,
-    fileFilter: fileFilter,
-    limits: {
-        fileSize: 500 * 1024 * 1024 // Limit: 500MB for Reels
+    limits: { fileSize: 100 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = [
+            'image/jpeg', 'image/png', 'image/jpg', 'image/webp',
+            'video/mp4', 'video/quicktime', 'video/x-matroska'
+        ];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type. Only JPEG, PNG, WEBP, MP4, and MOV are allowed.'), false);
+        }
     }
 });
 

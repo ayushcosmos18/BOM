@@ -23,7 +23,6 @@ const revisionLogSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
 });
 
-// --- NEW: Social Media Specific Sub-Schema ---
 const socialMetaSchema = new mongoose.Schema({
     // Defines exactly what the UI should render
     postType: { type: String, enum: ['static', 'carousel', 'reel'], default: 'static' },
@@ -33,8 +32,8 @@ const socialMetaSchema = new mongoose.Schema({
 
     // The Actual Content (Stored on your Local PC)
     mediaFiles: [{
-        url: { type: String },       // "http://192.168.x.x:5000/uploads/vid.mp4"
-        mimeType: { type: String },  // "video/mp4" or "image/jpeg"
+        url: { type: String },       
+        mimeType: { type: String },  
         originalName: { type: String }
     }],
 
@@ -47,12 +46,15 @@ const socialMetaSchema = new mongoose.Schema({
     // Which "Month Bucket" this belongs to (e.g., "2025-02")
     plannedMonth: { type: String },
     
+    // NEW: Specific Calendar Date (e.g., 2025-02-14T00:00:00.000Z)
+    scheduledDate: { type: Date, default: null },
+
     // THE CHECKBOX: True = Posted, False = Pending
     isPosted: { type: Boolean, default: false },
     
     // Optional: Platform specific status
     platform: { type: String, enum: ['Instagram', 'LinkedIn', 'YouTube'], default: 'Instagram' }
-}, { _id: false }); // No separate ID needed for this sub-object
+}, { _id: false });
 
 const TaskSchema = new mongoose.Schema({
     project: {

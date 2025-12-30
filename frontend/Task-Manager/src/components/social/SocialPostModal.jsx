@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-// FIX: Using LuLayers for Carousel icon
-import { LuUpload, LuSave, LuVideo, LuTrash2, LuImage, LuMaximize2, LuX, LuCirclePlay, LuLayers } from 'react-icons/lu';
+import { LuUpload, LuSave, LuVideo, LuTrash2, LuImage, LuMaximize2, LuX, LuCirclePlay, LuLayers, LuCalendar } from 'react-icons/lu';
 import axiosInstance from '../../utils/axiosinstance';
 import { API_PATHS, BASE_URL } from '../../utils/apiPaths';
 import toast from 'react-hot-toast';
@@ -20,6 +19,9 @@ const SocialPostModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
     const [dueDate, setDueDate] = useState("");
     const [assignedTo, setAssignedTo] = useState([]);
     
+    // NEW: Scheduled Date for Social Calendar
+    const [scheduledDate, setScheduledDate] = useState("");
+
     // Media State
     const [mediaFiles, setMediaFiles] = useState([]);
     const [selectedCoverUrl, setSelectedCoverUrl] = useState(null); 
@@ -38,6 +40,9 @@ const SocialPostModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
             setAssignedTo(task.assignedTo || []);
             setMediaFiles(task.socialMeta?.mediaFiles || []);
             setSelectedCoverUrl(task.socialMeta?.gridDisplayImage || null);
+            
+            // LOAD SCHEDULED DATE
+            setScheduledDate(task.socialMeta?.scheduledDate ? new Date(task.socialMeta.scheduledDate).toISOString().split('T')[0] : "");
         }
     }, [task]);
 
@@ -91,14 +96,12 @@ const SocialPostModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
                 setSelectedCoverUrl(newFiles[0].url);
                 toast.success("Cover updated!");
             } else {
-                // Functional update to ensure we have the latest state for detection
                 setMediaFiles(prev => {
                     const updatedList = [...prev, ...newFiles];
-                    autoDetectPostType(updatedList); // <--- TRIGGER AUTO DETECT
+                    autoDetectPostType(updatedList); 
                     return updatedList;
                 });
 
-                // Auto-select cover if none exists
                 if (!selectedCoverUrl && newFiles.length > 0) {
                     setSelectedCoverUrl(newFiles[0].url);
                 }
@@ -113,13 +116,12 @@ const SocialPostModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
         }
     };
 
-    // --- OTHER ACTIONS ---
     const handleRemoveFile = (index) => {
         const fileToRemove = mediaFiles[index];
         const newFiles = mediaFiles.filter((_, i) => i !== index);
         
         setMediaFiles(newFiles);
-        autoDetectPostType(newFiles); // <--- TRIGGER AUTO DETECT ON REMOVE
+        autoDetectPostType(newFiles);
 
         if (fileToRemove.url === selectedCoverUrl) {
             setSelectedCoverUrl(newFiles.length > 0 ? newFiles[0].url : null);
@@ -160,7 +162,9 @@ const SocialPostModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
 
             const payload = {
                 title, dueDate, assignedTo, caption, hashtags, postType, mediaFiles,
-                gridDisplayImage: finalGridImage
+                gridDisplayImage: finalGridImage,
+                // INCLUDE SCHEDULED DATE
+                scheduledDate: scheduledDate || null 
             };
 
             const res = await axiosInstance.put(API_PATHS.SOCIAL.UPDATE_TASK(task._id), payload);
@@ -286,6 +290,7 @@ const SocialPostModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
                             />
                         </div>
 
+                        {/* POST TYPE & SCHEDULE ROW */}
                         <div className="flex gap-4">
                             <div className="flex-1">
                                 <label className="text-xs font-bold text-slate-500 uppercase">Post Type</label>
@@ -300,13 +305,17 @@ const SocialPostModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
                                     <option value="story">Story</option>
                                 </select>
                             </div>
+                            
+                            {/* NEW: SCHEDULED DATE INPUT */}
                             <div className="flex-1">
-                                <label className="text-xs font-bold text-slate-500 uppercase">Due Date</label>
+                                <label className="text-xs font-bold text-primary uppercase flex items-center gap-1">
+                                    <LuCalendar /> Schedule For
+                                </label>
                                 <input 
                                     type="date" 
-                                    value={dueDate} 
-                                    onChange={(e) => setDueDate(e.target.value)}
-                                    className="w-full border rounded px-2 py-1.5 mt-1 text-sm" 
+                                    value={scheduledDate} 
+                                    onChange={(e) => setScheduledDate(e.target.value)}
+                                    className="w-full border-2 border-primary/20 rounded px-2 py-1.5 mt-1 text-sm focus:border-primary outline-none" 
                                 />
                             </div>
                         </div>

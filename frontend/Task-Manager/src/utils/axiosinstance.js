@@ -3,7 +3,7 @@ import { BASE_URL } from './apiPaths';
 
 const axiosInstance=axios.create({
     baseURL:BASE_URL,
-    timeout:10000,
+    timeout:60000,
     headers:{
         "Content-Type":"application/json",
         Accept:"application/json",
@@ -45,7 +45,7 @@ axiosInstance.interceptors.response.use(
 
 export const blogApi = axios.create({
     baseURL: "http://localhost:5000", // Your CMS Backend
-    timeout: 10000,
+    timeout: 60000,
     headers:{
         "Content-Type":"application/json",
         Accept:"application/json",

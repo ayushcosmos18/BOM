@@ -3,27 +3,28 @@ const router = express.Router();
 const { protect } = require('../middlewares/authMiddleware');
 const socialController = require('../controllers/socialController');
 
-// ==========================================
-// 1. STATIC ROUTES MUST COME FIRST
-// ==========================================
+// 1. IMPORT THE UPLOAD MIDDLEWARE
+const upload = require('../middlewares/uploadMiddleware'); 
 
-// This specific route must be defined BEFORE any generic /:id routes
+// ==========================================
+// 1. STATIC ROUTES
+// ==========================================
 router.get('/download', protect, socialController.downloadGrid); 
-
 router.get('/board', protect, socialController.getSocialBoard);
 
 // ==========================================
-// 2. DYNAMIC ROUTES COME LAST
+// 2. POST ROUTES
 // ==========================================
 
-// If you have something like this, it must be at the bottom:
-// router.get('/:id', protect, socialController.getSocialTaskById); 
+// 2. INJECT MIDDLEWARE HERE
+// 'files' must match the key used in frontend: formData.append('files', ...)
+router.post('/upload', protect, upload.array('files'), socialController.uploadMedia);
 
-// POST Routes
-router.post('/upload', protect, socialController.uploadMedia);
 router.post('/create-idea', protect, socialController.createSocialIdea);
 
-// PUT Routes
+// ==========================================
+// 3. PUT ROUTES
+// ==========================================
 router.put('/grid-update', protect, socialController.updateGridPositions);
 router.put('/task/:id', protect, socialController.updateSocialTask);
 

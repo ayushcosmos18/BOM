@@ -1,5 +1,4 @@
 import React from 'react';
-// FIX: Changed LuAlertCircle to LuCircleAlert
 import { LuVideo, LuImage, LuCircleCheck, LuUpload, LuLayers, LuCircleAlert } from 'react-icons/lu';
 import { BASE_URL } from '../../utils/apiPaths';
 
@@ -8,10 +7,14 @@ const SocialCard = ({ task, isGridMode, isOverlay, onClick }) => {
     const isPosted = task.socialMeta?.isPosted;
     const postType = task.socialMeta?.postType || 'static';
     
-    // Resolve Image URL
-    const displayImage = task.socialMeta?.gridDisplayImage 
-        ? `${BASE_URL}${task.socialMeta.gridDisplayImage}`
-        : null;
+    // --- FIX: Smart URL Resolution ---
+    const getFullUrl = (path) => {
+        if (!path) return null;
+        // If it's already a link (Cloudinary), use it. Otherwise, assume local uploads folder.
+        return path.startsWith('http') ? path : `${BASE_URL}${path}`;
+    };
+
+    const displayImage = getFullUrl(task.socialMeta?.gridDisplayImage);
 
     // --- GRID VIEW ---
     if (isGridMode) {
@@ -54,7 +57,6 @@ const SocialCard = ({ task, isGridMode, isOverlay, onClick }) => {
                 </span>
                 
                 <div className="flex items-center gap-1 bg-red-50 text-red-600 px-2 py-1 rounded border border-red-100 text-[10px] font-bold uppercase tracking-wide shadow-sm">
-                    {/* FIX: Updated Icon Name */}
                     <LuCircleAlert size={10} /> Needs Media
                 </div>
             </div>
